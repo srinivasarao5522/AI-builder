@@ -323,38 +323,41 @@ export class AppComponent implements OnInit, AfterViewChecked {
   }
 
   // --- Voice / Speech Recognition ---
+  silenceTimer: any;
+
   initNativeSpeechRecognition() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       this.nativeSpeechRecognition = new SpeechRecognition();
-      this.nativeSpeechRecognition.continuous = false;
+      this.nativeSpeechRecognition.continuous = true; // Stay open until we explicitly close it or silence timeout
       this.nativeSpeechRecognition.interimResults = true; // Enables live partial transcription!
       
       this.nativeSpeechRecognition.onresult = (event: any) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          fullText += event.results[i][0].transcript;
+        }
+        this.userInput = fullText;
+
+        // Auto-submit silence detection (2 seconds of silence triggers submit)
+        if (this.silenceTimer) clearTimeout(this.silenceTimer);
+        this.silenceTimer = setTimeout(() => {
+          if (this.isRecording && this.userInput.trim()) {
+            this.stopRecordingAndSubmit();
           }
-        }
-        
-        // Push intermediate or final text to the input field dynamically
-        if (finalTranscript) {
-          this.userInput = finalTranscript;
-        } else {
-          this.userInput = interimTranscript;
-        }
+        }, 2000);
       };
+
       this.nativeSpeechRecognition.onerror = (event: any) => {
         this.isRecording = false;
+        if (this.silenceTimer) clearTimeout(this.silenceTimer);
       };
+
       this.nativeSpeechRecognition.onend = () => {
         this.isRecording = false;
+        if (this.silenceTimer) clearTimeout(this.silenceTimer);
         if (this.userInput && this.userInput.trim()) {
-          this.sendMessage(); // auto submit when user stopped talking
+          this.sendMessage(); // auto submit
         }
       }
     }
@@ -450,7 +453,13 @@ export class AppComponent implements OnInit, AfterViewChecked {
       alert("Please select a template first!");
       return;
     }
-    const payload = { cv_data: this.cvData, format: 'docx', template_id: this.selectedTemplate.id };
+    // Only send the base64 part of the logo URL if it is a default or uploaded one via data URIs
+    const payload = { 
+      cv_data: this.cvData, 
+      format: 'docx', 
+      template_id: this.selectedTemplate.id,
+      logo_data: this.companyLogoUrl 
+    };
     this.http.post(`${this.backendUrl}/generate`, payload, { responseType: 'blob' }).subscribe(blob => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

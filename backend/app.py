@@ -11,7 +11,7 @@ import openai
 import chromadb
 from PyPDF2 import PdfReader
 from docx import Document
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pptx import Presentation
 
@@ -241,6 +241,22 @@ async def generate_cv(req: dict):
         
         heading1.font.color.rgb = main_color
         heading2.font.color.rgb = main_color
+
+        # Inject Logo if present
+        logo_data = req.get("logo_data", "")
+        if logo_data and "base64," in logo_data:
+            try:
+                img_bytes = base64.b64decode(logo_data.split(",")[1])
+                img_stream = io.BytesIO(img_bytes)
+                if align_center:
+                    logo_p = doc.add_paragraph()
+                    logo_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    logo_r = logo_p.add_run()
+                    logo_r.add_picture(img_stream, width=Inches(1.0))
+                else:
+                    doc.add_picture(img_stream, width=Inches(1.0))
+            except Exception as e:
+                print(f"Failed to add logo: {e}")
 
         name_heading = doc.add_heading(cv_data.get("name", "Generated CV"), 0)
         name_heading.style.font.color.rgb = main_color
