@@ -441,12 +441,16 @@ export class AppComponent implements OnInit, AfterViewChecked {
       return;
     }
     this.activeTab = 'preview';
-    setTimeout(() => window.print(), 300);
+    // Give Angular change detection a cycle to render the updated DOM fully
+    setTimeout(() => window.print(), 500);
   }
 
   exportDocx() {
-    if (!this.selectedTemplate) return;
-    const payload = { cv_data: this.cvData, format: 'docx' };
+    if (!this.selectedTemplate) {
+      alert("Please select a template first!");
+      return;
+    }
+    const payload = { cv_data: this.cvData, format: 'docx', template_id: this.selectedTemplate.id };
     this.http.post(`${this.backendUrl}/generate`, payload, { responseType: 'blob' }).subscribe(blob => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

@@ -167,29 +167,38 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Printing styles for PDF export */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  #cv-preview-container, #cv-preview-container * {
-    visibility: visible;
-  }
-  #cv-preview-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+  body {
     margin: 0;
     padding: 0;
-    background: transparent;
-    box-shadow: none;
-    border: none;
+    background: white !important;
   }
+  /* Hide UI elements */
+  .topbar, .left-pane, .preview-toolbar, .edit-area {
+    display: none !important;
+  }
+  
+  /* Reset layout constraints for printing */
+  .app-container, .main-content, .right-pane {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .cv-render-area {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    display: block !important;
+  }
+
   .cv-template {
     width: 100% !important;
     height: auto !important;
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 20mm !important; /* Keep internal padding matching PDF page */
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

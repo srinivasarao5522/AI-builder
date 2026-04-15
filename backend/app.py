@@ -11,6 +11,8 @@ import openai
 import chromadb
 from PyPDF2 import PdfReader
 from docx import Document
+from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pptx import Presentation
 
 # Load environment variables
@@ -208,41 +210,88 @@ async def generate_cv(req: dict):
 
     if format_type == "docx":
         doc = Document()
-        doc.add_heading(cv_data.get("name", "Generated CV"), 0)
+        template_id = req.get("template_id", "t1")
+        
+        # Configure styles based on template
+        styles = doc.styles
+        heading1 = styles['Heading 1']
+        heading2 = styles['Heading 2']
+        normal = styles['Normal']
+        
+        # Base colors and alignment based on template
+        main_color = RGBColor(0, 0, 0)
+        accent_color = RGBColor(0, 0, 0)
+        align_center = False
+        
+        if template_id == 't1': # Classic
+            main_color = RGBColor(17, 17, 17) # Dark Gray
+            heading1.font.name = 'Times New Roman'
+        elif template_id == 't2': # Modern
+            main_color = RGBColor(15, 23, 42)
+            accent_color = RGBColor(71, 85, 105)
+            heading1.font.name = 'Arial'
+        elif template_id == 't3': # Creative
+            main_color = RGBColor(15, 23, 42)
+            accent_color = RGBColor(59, 130, 246) # Blue
+            heading1.font.name = 'Calibri'
+        elif template_id == 't4': # Exec
+            main_color = RGBColor(17, 17, 17)
+            align_center = True
+            heading1.font.name = 'Georgia'
+        
+        heading1.font.color.rgb = main_color
+        heading2.font.color.rgb = main_color
+
+        name_heading = doc.add_heading(cv_data.get("name", "Generated CV"), 0)
+        name_heading.style.font.color.rgb = main_color
+        if align_center:
+            name_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         contact_info = []
         if cv_data.get("email"): contact_info.append(cv_data.get("email"))
         if cv_data.get("phone"): contact_info.append(cv_data.get("phone"))
-        doc.add_paragraph(" | ".join(contact_info))
+        
+        contact_p = doc.add_paragraph(" | ".join(contact_info))
+        if align_center:
+            contact_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         if cv_data.get("summary"):
-            doc.add_heading("Summary", level=1)
+            h1 = doc.add_heading("Summary", level=1)
+            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
             doc.add_paragraph(cv_data.get("summary", ""))
         
         if cv_data.get("experience"):
-            doc.add_heading("Experience", level=1)
+            h1 = doc.add_heading("Experience", level=1)
+            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for exp in cv_data.get("experience", []):
-                doc.add_heading(exp.get("title", "Role"), level=2)
+                h2 = doc.add_heading(exp.get("title", "Role"), level=2)
                 p = doc.add_paragraph()
-                p.add_run(exp.get("company", "Company")).bold = True
+                run = p.add_run(exp.get("company", "Company"))
+                run.bold = True
+                run.font.color.rgb = accent_color
+                
                 if exp.get("dates"):
                     p.add_run(f" | {exp.get('dates')}")
                 if exp.get("description"):
                     doc.add_paragraph(exp.get("description", ""))
         
         if cv_data.get("education"):
-            doc.add_heading("Education", level=1)
+            h1 = doc.add_heading("Education", level=1)
+            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for edu in cv_data.get("education", []):
                 doc.add_heading(edu.get("degree", "Degree"), level=2)
                 doc.add_paragraph(edu.get("institution", "Institution"))
                 
         if cv_data.get("skills"):
-            doc.add_heading("Skills", level=1)
+            h1 = doc.add_heading("Skills", level=1)
+            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
             skills = cv_data.get("skills", [])
             if isinstance(skills, list):
-                doc.add_paragraph(", ".join(skills))
+                p = doc.add_paragraph(", ".join(skills))
+                if align_center: p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             else:
-                doc.add_paragraph(str(skills))
+                p = doc.add_paragraph(str(skills))
+                if align_center: p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         file_stream = io.BytesIO()
         doc.save(file_stream)
