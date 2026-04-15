@@ -180,8 +180,20 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     margin: 0;
     padding: 0;
-    background: white;
+    background: transparent;
     box-shadow: none;
     border: none;
+  }
+  .cv-template {
+    width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    margin: 0;
   }
 }

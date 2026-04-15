@@ -121,25 +121,25 @@
           
           <div class="form-group">
             <label>{{t.lblFullName || 'Full Name'}}</label>
-            <input type="text" name="name" [(ngModel)]="cvData.name" class="soft-input full-width">
+            <input type="text" name="name" [(ngModel)]="cvData.name" class="soft-input full-width" autocomplete="name" spellcheck="false">
           </div>
           <div class="form-group-row">
             <div class="form-group">
               <label>{{t.lblEmail || 'Email'}}</label>
               <!-- EMail validation attached right here natively -->
-              <input type="email" name="email" [(ngModel)]="cvData.email" #emailInput="ngModel" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$" class="soft-input full-width" [class.input-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+              <input type="email" name="email" [(ngModel)]="cvData.email" #emailInput="ngModel" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$" class="soft-input full-width" autocomplete="email" spellcheck="false" [class.input-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
               <small class="error-text" *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
                 Valid email is required.
               </small>
             </div>
             <div class="form-group">
               <label>{{t.lblPhone || 'Phone'}}</label>
-              <input type="text" name="phone" [(ngModel)]="cvData.phone" class="soft-input full-width">
+              <input type="tel" name="phone" [(ngModel)]="cvData.phone" class="soft-input full-width" autocomplete="tel" spellcheck="false">
             </div>
           </div>
           <div class="form-group">
             <label>{{t.lblSummary || 'Summary'}}</label>
-            <textarea name="summary" [(ngModel)]="cvData.summary" class="soft-input full-width" rows="4"></textarea>
+            <textarea name="summary" [(ngModel)]="cvData.summary" class="soft-input full-width" rows="4" spellcheck="true"></textarea>
           </div>
 
           <div class="section-edit">
@@ -148,12 +148,12 @@
               <button type="button" class="add-btn" (click)="addExperience()">{{t.btnAddRole || 'Add'}}</button>
             </div>
             <div class="item-edit-card" *ngFor="let exp of cvData.experience; let i = index">
-              <input type="text" [name]="'expTitle'+i" [(ngModel)]="exp.title" [placeholder]="t.phTitle || 'Title'" class="soft-input half-width">
-              <input type="text" [name]="'expCompany'+i" [(ngModel)]="exp.company" [placeholder]="t.phCompany || 'Company'" class="soft-input half-width">
-              <input type="text" [name]="'expDates'+i" [(ngModel)]="exp.dates" [placeholder]="t.phDates || 'Dates'" class="soft-input full-width mt-2">
+              <input type="text" [name]="'expTitle'+i" [(ngModel)]="exp.title" [placeholder]="t.phTitle || 'Title'" class="soft-input half-width" spellcheck="true">
+              <input type="text" [name]="'expCompany'+i" [(ngModel)]="exp.company" [placeholder]="t.phCompany || 'Company'" class="soft-input half-width" spellcheck="false">
+              <input type="text" [name]="'expDates'+i" [(ngModel)]="exp.dates" [placeholder]="t.phDates || 'Dates'" class="soft-input full-width mt-2" spellcheck="false">
               
               <div class="relative align-content">
-                 <textarea [name]="'expDesc'+i" [(ngModel)]="exp.description" [placeholder]="t.phDesc || 'Description'" class="soft-input full-width mt-2 desc-box" rows="4" [disabled]="exp._isEnhancing"></textarea>
+                 <textarea [name]="'expDesc'+i" [(ngModel)]="exp.description" [placeholder]="t.phDesc || 'Description'" class="soft-input full-width mt-2 desc-box" rows="4" [disabled]="exp._isEnhancing" spellcheck="true"></textarea>
                  
                  <!-- AI Enhance Auto-Complete Button -->
                  <button type="button" class="btn-enhance action-btn-sm" (click)="enhanceExperience(exp)" [disabled]="exp._isEnhancing || !exp.description">
@@ -170,14 +170,14 @@
               <button type="button" class="add-btn" (click)="addEducation()">{{t.btnAddEdu || 'Add'}}</button>
             </div>
              <div class="item-edit-card" *ngFor="let edu of cvData.education; let i = index">
-              <input type="text" [name]="'eduDegree'+i" [(ngModel)]="edu.degree" [placeholder]="t.phDegree || 'Degree'" class="soft-input half-width">
-              <input type="text" [name]="'eduInst'+i" [(ngModel)]="edu.institution" [placeholder]="t.phInst || 'Institution'" class="soft-input half-width">
+              <input type="text" [name]="'eduDegree'+i" [(ngModel)]="edu.degree" [placeholder]="t.phDegree || 'Degree'" class="soft-input half-width" spellcheck="true">
+              <input type="text" [name]="'eduInst'+i" [(ngModel)]="edu.institution" [placeholder]="t.phInst || 'Institution'" class="soft-input half-width" spellcheck="false">
             </div>
           </div>
           
           <div class="form-group">
             <label>{{t.lblSkills || 'Skills'}}</label>
-            <textarea name="skills" [placeholder]="t.phSkills || 'Skills'" [ngModel]="cvData.skills?.join(', ')" (ngModelChange)="cvData.skills = $event.split(',')" class="soft-input full-width" rows="2"></textarea>
+            <textarea name="skills" [placeholder]="t.phSkills || 'Skills'" [ngModel]="cvData.skills?.join(', ')" (ngModelChange)="cvData.skills = $event.split(',')" class="soft-input full-width" rows="2" spellcheck="true"></textarea>
           </div>
         </form>
       </div>

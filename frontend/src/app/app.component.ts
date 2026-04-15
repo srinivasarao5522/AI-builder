@@ -342,11 +342,10 @@ export class AppComponent implements OnInit, AfterViewChecked {
         }
         
         // Push intermediate or final text to the input field dynamically
-        this.userInput = finalTranscript || interimTranscript;
-
         if (finalTranscript) {
-          this.isRecording = false; 
-          this.sendMessage(); // auto submit
+          this.userInput = finalTranscript;
+        } else {
+          this.userInput = interimTranscript;
         }
       };
       this.nativeSpeechRecognition.onerror = (event: any) => {
@@ -354,6 +353,9 @@ export class AppComponent implements OnInit, AfterViewChecked {
       };
       this.nativeSpeechRecognition.onend = () => {
         this.isRecording = false;
+        if (this.userInput && this.userInput.trim()) {
+          this.sendMessage(); // auto submit when user stopped talking
+        }
       }
     }
   }
