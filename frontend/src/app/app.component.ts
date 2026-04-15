@@ -135,7 +135,6 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.addMessage('assistant', 'Welcome! I am your AI CV Builder. You can chat with me, talk to me via voice, or drop an existing resume here. How can I assist you today?');
     this.fetchTemplates();
     this.initNativeSpeechRecognition();
-    this.uiEmail = this.cvData.email;
   }
 
   ngAfterViewChecked() {
@@ -448,16 +447,6 @@ export class AppComponent implements OnInit, AfterViewChecked {
   }
 
   // --- Various actions ---
-  uiEmail: string = '';
-  
-  onEmailChange(newVal: string) {
-    this.uiEmail = newVal;
-    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,4}$/;
-    if (emailRegex.test(newVal) || newVal === '') {
-       this.cvData.email = newVal; // Sync canonical email only if valid or empty
-    }
-  }
-
   fetchTemplates() {
     this.http.get<any>(`${this.backendUrl}/templates`).subscribe(res => {
       this.templates = res.templates || [];
