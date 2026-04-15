@@ -4,21 +4,29 @@
   <header class="topbar soft-panel">
     <div class="logo">
       <div class="logo-icon">CV</div>
-      <h2>{{t.title}}</h2>
+      <h2>{{t.title || 'AI Resume Builder'}}</h2>
     </div>
     
     <div class="header-actions">
+      <!-- Theme Switcher -->
+      <button class="btn btn-icon theme-btn" (click)="toggleTheme()" title="Toggle Dark/Light Glassy Theme">
+        <span *ngIf="theme === 'light'">🌙</span>
+        <span *ngIf="theme === 'dark'">☀️</span>
+      </button>
+
+      <!-- Language Selector -->
       <select [(ngModel)]="language" (change)="onLanguageChange()" class="lang-select soft-input">
         <option *ngFor="let lang of languages" [value]="lang">{{lang}}</option>
       </select>
+      
       <button class="btn btn-secondary" (click)="exportJson()">
-        <i class="icon">{{ '{}' }}</i> {{t.exportJson}}
+        <i class="icon">{{ '{}' }}</i> {{t.exportJson || 'JSON'}}
       </button>
       <button class="btn btn-secondary" (click)="exportDocx()">
-        <i class="icon">📄</i> {{t.exportDocx}}
+        <i class="icon">📄</i> {{t.exportDocx || 'DOCX'}}
       </button>
-      <button class="btn btn-primary shadow-btn" (click)="exportPDF()">
-        <i class="icon">🖨️</i> {{t.exportPdf}}
+      <button class="btn btn-primary" (click)="exportPDF()">
+        <i class="icon">🖨️</i> {{t.exportPdf || 'PDF'}}
       </button>
     </div>
   </header>
@@ -29,12 +37,18 @@
     <div class="left-pane soft-panel">
       
       <div class="chat-header">
-        <h3>{{t.chatTitle}}</h3>
+        <h3>{{t.chatTitle || 'Conversational Assistant'}}</h3>
         <p class="subtitle">{{t.chatSubtitle}}</p>
         
-        <div class="upload-zone" (click)="triggerFileInput()" tabindex="0">
+        <!-- Drag & Drop Upload Zone -->
+        <div class="upload-zone" 
+             (click)="triggerFileInput()" tabindex="0"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)"
+             [class.drag-active]="isDragging">
           <i class="icon-large">📥</i>
-          <span>{{t.uploadZone}}</span>
+          <span>{{t.uploadZone || 'Drag & Drop or Click to Upload'}}</span>
           <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept=".pdf,.doc,.docx,.ppt,.pptx">
         </div>
       </div>
@@ -56,16 +70,16 @@
         </div>
       </div>
 
-      <div class="input-area">
-        <button class="btn btn-icon mic-btn" [class.animate-pulse-recording]="isRecording" (click)="toggleRecording()" title="Voice Input">
+      <div class="input-area" [class.recording-active]="isRecording">
+        <button class="btn btn-icon mic-btn" [class.animate-pulse-recording]="isRecording" (click)="toggleRecording()" title="Speak! (Stops intelligently when silent or on typing)">
           🎤
         </button>
         <input type="text" class="text-input soft-input" 
                [(ngModel)]="userInput" 
                (keyup.enter)="sendMessage()" 
-               [placeholder]="t.typePlaceholder">
+               [placeholder]="isRecording ? 'Listening...' : (t.typePlaceholder || 'Type something...')">
         <button class="btn btn-primary send-btn" (click)="sendMessage()" [disabled]="!userInput.trim()">
-          {{t.btnSend}}
+          {{t.btnSend || '➤'}}
         </button>
       </div>
       
@@ -76,14 +90,21 @@
       
       <div class="preview-toolbar">
         <div class="tabs">
-          <button class="tab-btn" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">{{t.tabPreview}}</button>
-          <button class="tab-btn" [class.active]="activeTab === 'edit'" (click)="activeTab = 'edit'">{{t.tabEdit}}</button>
+          <button class="tab-btn" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">{{t.tabPreview || 'Preview'}}</button>
+          <button class="tab-btn" [class.active]="activeTab === 'edit'" (click)="activeTab = 'edit'">{{t.tabEdit || 'Edit'}}</button>
         </div>
 
         <div class="templates-scroll">
-          <button class="action-btn-sm" (click)="suggestTemplate()">
-             {{t.btnAutoSuggest}}
+          <button class="action-btn-sm" (click)="triggerLogoUpload()" title="Upload a Custom Company Logo">
+            <!-- Hidden Logo Input -->
+            <input type="file" #logoInput hidden (change)="onLogoSelected($event)" accept="image/*">
+            🖼️ {{t.btnUploadLogo || 'Upload Logo'}}
           </button>
+          
+          <button class="action-btn-sm" (click)="suggestTemplate()">
+             {{t.btnAutoSuggest || '✨ Suggest Template'}}
+          </button>
+          
           <div class="template-card" *ngFor="let tmpl of templates" 
                [class.active]="selectedTemplate?.id === tmpl.id"
                (click)="selectTemplate(tmpl)">
@@ -92,68 +113,81 @@
         </div>
       </div>
 
-      <!-- EDIT MODE (Human in the loop validation) -->
+      <!-- EDIT MODE -->
       <div class="edit-area" *ngIf="activeTab === 'edit'">
-        <div class="edit-form">
-          <h3 class="form-title">{{t.formTitle}}</h3>
-          <p class="form-desc">{{t.formDesc}}</p>
+        <form class="edit-form" #cvForm="ngForm">
+          <h3 class="form-title">{{t.formTitle || 'Edit Schema'}}</h3>
+          <p class="form-desc">{{t.formDesc || 'Modify elements.'}}</p>
           
           <div class="form-group">
-            <label>{{t.lblFullName}}</label>
-            <input type="text" [(ngModel)]="cvData.name" class="soft-input full-width">
+            <label>{{t.lblFullName || 'Full Name'}}</label>
+            <input type="text" name="name" [(ngModel)]="cvData.name" class="soft-input full-width">
           </div>
           <div class="form-group-row">
             <div class="form-group">
-              <label>{{t.lblEmail}}</label>
-              <input type="email" [(ngModel)]="cvData.email" class="soft-input full-width">
+              <label>{{t.lblEmail || 'Email'}}</label>
+              <!-- EMail validation attached right here natively -->
+              <input type="email" name="email" [(ngModel)]="cvData.email" #emailInput="ngModel" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$" class="soft-input full-width" [class.input-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+              <small class="error-text" *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+                Valid email is required.
+              </small>
             </div>
             <div class="form-group">
-              <label>{{t.lblPhone}}</label>
-              <input type="text" [(ngModel)]="cvData.phone" class="soft-input full-width">
+              <label>{{t.lblPhone || 'Phone'}}</label>
+              <input type="text" name="phone" [(ngModel)]="cvData.phone" class="soft-input full-width">
             </div>
           </div>
           <div class="form-group">
-            <label>{{t.lblSummary}}</label>
-            <textarea [(ngModel)]="cvData.summary" class="soft-input full-width" rows="4"></textarea>
+            <label>{{t.lblSummary || 'Summary'}}</label>
+            <textarea name="summary" [(ngModel)]="cvData.summary" class="soft-input full-width" rows="4"></textarea>
           </div>
 
           <div class="section-edit">
             <div class="section-title-bar">
-              <h4>{{t.lblExp}}</h4>
-              <button class="add-btn" (click)="addExperience()">{{t.btnAddRole}}</button>
+              <h4>{{t.lblExp || 'Experience'}}</h4>
+              <button type="button" class="add-btn" (click)="addExperience()">{{t.btnAddRole || 'Add'}}</button>
             </div>
             <div class="item-edit-card" *ngFor="let exp of cvData.experience; let i = index">
-              <input type="text" [(ngModel)]="exp.title" [placeholder]="t.phTitle" class="soft-input half-width">
-              <input type="text" [(ngModel)]="exp.company" [placeholder]="t.phCompany" class="soft-input half-width">
-              <input type="text" [(ngModel)]="exp.dates" [placeholder]="t.phDates" class="soft-input full-width mt-2">
-              <textarea [(ngModel)]="exp.description" [placeholder]="t.phDesc" class="soft-input full-width mt-2" rows="3"></textarea>
+              <input type="text" [name]="'expTitle'+i" [(ngModel)]="exp.title" [placeholder]="t.phTitle || 'Title'" class="soft-input half-width">
+              <input type="text" [name]="'expCompany'+i" [(ngModel)]="exp.company" [placeholder]="t.phCompany || 'Company'" class="soft-input half-width">
+              <input type="text" [name]="'expDates'+i" [(ngModel)]="exp.dates" [placeholder]="t.phDates || 'Dates'" class="soft-input full-width mt-2">
+              
+              <div class="relative align-content">
+                 <textarea [name]="'expDesc'+i" [(ngModel)]="exp.description" [placeholder]="t.phDesc || 'Description'" class="soft-input full-width mt-2 desc-box" rows="4" [disabled]="exp._isEnhancing"></textarea>
+                 
+                 <!-- AI Enhance Auto-Complete Button -->
+                 <button type="button" class="btn-enhance action-btn-sm" (click)="enhanceExperience(exp)" [disabled]="exp._isEnhancing || !exp.description">
+                   <span *ngIf="!exp._isEnhancing">{{t.btnEnhance || '✨ AI Enhance'}}</span>
+                   <span *ngIf="exp._isEnhancing">Generating...</span>
+                 </button>
+              </div>
             </div>
           </div>
 
           <div class="section-edit">
             <div class="section-title-bar">
-              <h4>{{t.lblEdu}}</h4>
-              <button class="add-btn" (click)="addEducation()">{{t.btnAddEdu}}</button>
+              <h4>{{t.lblEdu || 'Education'}}</h4>
+              <button type="button" class="add-btn" (click)="addEducation()">{{t.btnAddEdu || 'Add'}}</button>
             </div>
              <div class="item-edit-card" *ngFor="let edu of cvData.education; let i = index">
-              <input type="text" [(ngModel)]="edu.degree" [placeholder]="t.phDegree" class="soft-input half-width">
-              <input type="text" [(ngModel)]="edu.institution" [placeholder]="t.phInst" class="soft-input half-width">
+              <input type="text" [name]="'eduDegree'+i" [(ngModel)]="edu.degree" [placeholder]="t.phDegree || 'Degree'" class="soft-input half-width">
+              <input type="text" [name]="'eduInst'+i" [(ngModel)]="edu.institution" [placeholder]="t.phInst || 'Institution'" class="soft-input half-width">
             </div>
           </div>
           
           <div class="form-group">
-            <label>{{t.lblSkills}}</label>
-            <textarea [placeholder]="t.phSkills" [ngModel]="cvData.skills?.join(', ')" (ngModelChange)="cvData.skills = $event.split(',')" class="soft-input full-width" rows="2"></textarea>
+            <label>{{t.lblSkills || 'Skills'}}</label>
+            <textarea name="skills" [placeholder]="t.phSkills || 'Skills'" [ngModel]="cvData.skills?.join(', ')" (ngModelChange)="cvData.skills = $event.split(',')" class="soft-input full-width" rows="2"></textarea>
           </div>
-        </div>
+        </form>
       </div>
 
       <!-- PREVIEW MODE -->
       <div class="cv-render-area" id="cv-preview-container" *ngIf="activeTab === 'preview'">
         
         <div class="empty-state" *ngIf="!selectedTemplate">
-           <h2>{{t.noTemplate}}</h2>
-           <p>{{t.noTemplateDesc}}</p>
+           <h2>{{t.noTemplate || 'No Template Selected'}}</h2>
+           <p>{{t.noTemplateDesc || ''}}</p>
         </div>
 
         <!-- Render Template 1: Classic Elegance -->
@@ -168,11 +202,11 @@
             </div>
           </header>
           <section class="cv-section" *ngIf="cvData.summary">
-            <h4 class="section-title">{{t.lblSummary}}</h4>
+            <h4 class="section-title">{{t.lblSummary || 'Summary'}}</h4>
             <p>{{cvData.summary}}</p>
           </section>
           <section class="cv-section" *ngIf="cvData.experience?.length">
-            <h4 class="section-title">{{t.lblExp}}</h4>
+            <h4 class="section-title">{{t.lblExp || 'Experience'}}</h4>
             <div class="exp-item" *ngFor="let exp of cvData.experience">
               <div class="exp-header">
                 <strong>{{exp.title || t.phTitle}}</strong>
@@ -183,13 +217,13 @@
             </div>
           </section>
           <section class="cv-section" *ngIf="cvData.education?.length">
-            <h4 class="section-title">{{t.lblEdu}}</h4>
+            <h4 class="section-title">{{t.lblEdu || 'Education'}}</h4>
             <div class="edu-item" *ngFor="let edu of cvData.education">
               <strong>{{edu.degree}}</strong> - {{edu.institution}}
             </div>
           </section>
           <section class="cv-section" *ngIf="cvData.skills?.length">
-            <h4 class="section-title">{{t.lblSkills}}</h4>
+            <h4 class="section-title">{{t.lblSkills || 'Skills'}}</h4>
             <div class="skills-list">
               <span class="skill-tag" *ngFor="let skill of cvData.skills">{{skill.trim()}}</span>
             </div>
@@ -206,13 +240,13 @@
               <p>{{cvData.phone}}</p>
             </div>
             <div class="t2-section" *ngIf="cvData.skills?.length">
-              <h4 class="section-title">{{t.lblSkills}}</h4>
+              <h4 class="section-title">{{t.lblSkills || 'Expertise'}}</h4>
               <ul class="t2-skills">
                 <li *ngFor="let skill of cvData.skills">{{skill.trim()}}</li>
               </ul>
             </div>
              <div class="t2-section" *ngIf="cvData.education?.length">
-              <h4 class="section-title">{{t.lblEdu}}</h4>
+              <h4 class="section-title">{{t.lblEdu || 'Education'}}</h4>
               <div *ngFor="let edu of cvData.education" class="t2-edu">
                 <strong>{{edu.degree}}</strong><br>
                 {{edu.institution}}
@@ -221,11 +255,11 @@
           </div>
           <div class="t2-right">
             <div class="t2-section" *ngIf="cvData.summary">
-              <h4 class="section-title">{{t.lblSummary}}</h4>
+              <h4 class="section-title">{{t.lblSummary || 'About Me'}}</h4>
               <p>{{cvData.summary}}</p>
             </div>
             <div class="t2-section" *ngIf="cvData.experience?.length">
-              <h4 class="section-title">{{t.lblExp}}</h4>
+              <h4 class="section-title">{{t.lblExp || 'Experience'}}</h4>
               <div class="t2-exp" *ngFor="let exp of cvData.experience">
                 <div class="t2-exp-head">
                   <strong>{{exp.title}}</strong> • {{exp.company}}

@@ -97,6 +97,27 @@ Current CV Data: {json.dumps(req.cv_data)}
     except Exception as e:
         return {"reply": f"Error communicating with AI: {str(e)}", "cv_data": req.cv_data}
 
+class EnhanceRequest(BaseModel):
+    text: str
+    context: str = ""
+    language: str = "en"
+
+@app.post("/api/enhance")
+async def enhance_text(req: EnhanceRequest):
+    if not openai.api_key:
+        return {"enhanced": req.text}
+    try:
+        sys_prompt = f"You are a professional resume writer. Your job is to take the user's short or poorly written text and auto-complete/enhance it into a punchy, professional, results-oriented resume bullet point. Expand upon their idea naturally. Output ONLY the beautifully rewritten text. Language: {req.language}"
+        user_msg = f"Role Context: {req.context}\nInput Text: {req.text}"
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_msg}],
+            temperature=0.7
+        )
+        return {"enhanced": response.choices[0].message.content.strip()}
+    except Exception as e:
+        return {"enhanced": req.text}
+
 @app.post("/api/transcribe")
 async def transcribe_audio(audio: UploadFile = File(...)):
     if not openai.api_key:

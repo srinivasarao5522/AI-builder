@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -16,14 +16,15 @@ const UI_TRANSLATIONS: any = {
     exportJson: 'JSON',
     chatTitle: 'Conversational Assistant',
     chatSubtitle: 'Chat, speak, or drop a document to build your resume.',
-    uploadZone: 'Upload Word, PDF, or PPT',
+    uploadZone: 'Drag & Drop or Click to Upload (Word, PDF, PPT)',
     typePlaceholder: 'Type a message (e.g. "I am a data analyst at Google")',
     btnSend: '➤',
     tabPreview: 'Live Preview',
     tabEdit: 'Human Review & Edit',
     btnAutoSuggest: '✨ Auto Suggest Template',
+    btnUploadLogo: 'Upload Logo',
     noTemplate: 'No Template Selected',
-    noTemplateDesc: 'Start chatting to build your profile, upload a document, or click a template above to see the live rendering.',
+    noTemplateDesc: 'Start chatting to build your profile, drop a document, or click a template above to see the live rendering.',
     formTitle: 'Validate & Edit Schema',
     formDesc: 'Modify the parsed canonical model manually here. Changes reflect instantly.',
     lblFullName: 'Full Name',
@@ -41,7 +42,8 @@ const UI_TRANSLATIONS: any = {
     phDesc: 'Description/Responsibilities',
     phDegree: 'Degree',
     phInst: 'Institution',
-    phSkills: 'JS, SQL, React...'
+    phSkills: 'JS, SQL, React...',
+    btnEnhance: '✨ AI Enhance'
   },
   'Spanish': {
     title: 'Constructor de CV IA',
@@ -50,15 +52,15 @@ const UI_TRANSLATIONS: any = {
     exportJson: 'JSON',
     chatTitle: 'Asistente Conversacional',
     chatSubtitle: 'Chatea, habla o sube un documento para construir tu currículum.',
-    uploadZone: 'Subir Word, PDF o PPT',
+    uploadZone: 'Arrastra y suelta o haz clic para subir',
     typePlaceholder: 'Escribe un mensaje...',
     btnSend: '➤',
     tabPreview: 'Vista Previa',
     tabEdit: 'Revisión Humana y Edición',
     btnAutoSuggest: '✨ Sugerir Plantilla',
+    btnUploadLogo: 'Subir Logo',
     noTemplate: 'Ninguna plantilla seleccionada',
-    noTemplateDesc: 'Empieza a chatear o selecciona una plantilla arriba.',
-    formTitle: 'Validar y Editar Esquema',
+    formTitle: 'Validar y Editar',
     formDesc: 'Modifica el modelo manualmente aquí.',
     lblFullName: 'Nombre Completo',
     lblEmail: 'Correo',
@@ -66,7 +68,7 @@ const UI_TRANSLATIONS: any = {
     lblSummary: 'Resumen Profesional',
     lblExp: 'Experiencia',
     lblEdu: 'Educación',
-    lblSkills: 'Habilidades (separadas por comas)',
+    lblSkills: 'Habilidades',
     btnAddRole: '+ Añadir Rol',
     btnAddEdu: '+ Añadir Educación',
     phTitle: 'Cargo',
@@ -75,143 +77,8 @@ const UI_TRANSLATIONS: any = {
     phDesc: 'Descripción',
     phDegree: 'Grado',
     phInst: 'Institución',
-    phSkills: 'JS, SQL, React...'
-  },
-  'French': {
-    title: 'Créateur de CV IA',
-    exportDocx: 'DOCX',
-    exportPdf: 'PDF',
-    exportJson: 'JSON',
-    chatTitle: 'Assistant Conversationnel',
-    chatSubtitle: 'Discutez, parlez ou déposez un document.',
-    uploadZone: 'Télécharger Word, PDF ou PPT',
-    typePlaceholder: 'Tapez un message...',
-    btnSend: '➤',
-    tabPreview: 'Aperçu en direct',
-    tabEdit: 'Révision Humaine',
-    btnAutoSuggest: '✨ Suggérer Modèle',
-    noTemplate: 'Aucun modèle sélectionné',
-    noTemplateDesc: 'Commencez à discuter pour créer votre profil.',
-    formTitle: 'Valider et Éditer',
-    formDesc: 'Modifiez manuellement le modèle ici.',
-    lblFullName: 'Nom Complet',
-    lblEmail: 'E-mail',
-    lblPhone: 'Téléphone',
-    lblSummary: 'Résumé Professionnel',
-    lblExp: 'Expérience',
-    lblEdu: 'Éducation',
-    lblSkills: 'Compétences',
-    btnAddRole: '+ Ajouter Rôle',
-    btnAddEdu: '+ Ajouter Éducation',
-    phTitle: 'Titre du poste',
-    phCompany: 'Entreprise',
-    phDates: 'Dates',
-    phDesc: 'Description',
-    phDegree: 'Diplôme',
-    phInst: 'Institution',
-    phSkills: 'JS, SQL, React...'
-  },
-  'German': {
-    title: 'KI Lebenslauf Ersteller',
-    exportDocx: 'DOCX',
-    exportPdf: 'PDF',
-    exportJson: 'JSON',
-    chatTitle: 'Gesprächsassistent',
-    chatSubtitle: 'Chatten, sprechen oder ein Dokument hochladen.',
-    uploadZone: 'Word, PDF oder PPT hochladen',
-    typePlaceholder: 'Geben Sie eine Nachricht ein...',
-    btnSend: '➤',
-    tabPreview: 'Live-Vorschau',
-    tabEdit: 'Menschliche Überprüfung',
-    btnAutoSuggest: '✨ Vorlage vorschlagen',
-    noTemplate: 'Keine Vorlage ausgewählt',
-    noTemplateDesc: 'Beginnen Sie zu chatten, um Ihr Profil zu erstellen.',
-    formTitle: 'Schema überprüfen',
-    formDesc: 'Ändern Sie das geparste Modell manuell.',
-    lblFullName: 'Vollständiger Name',
-    lblEmail: 'E-Mail',
-    lblPhone: 'Telefon',
-    lblSummary: 'Berufliche Zusammenfassung',
-    lblExp: 'Erfahrung',
-    lblEdu: 'Bildung',
-    lblSkills: 'Fähigkeiten',
-    btnAddRole: '+ Rolle hinzufügen',
-    btnAddEdu: '+ Bildung hinzufügen',
-    phTitle: 'Berufsbezeichnung',
-    phCompany: 'Unternehmen',
-    phDates: 'Daten',
-    phDesc: 'Beschreibung',
-    phDegree: 'Abschluss',
-    phInst: 'Institution',
-    phSkills: 'JS, SQL...'
-  },
-  'Hindi': {
-    title: 'एआई रेज़्यूमे बिल्डर',
-    exportDocx: 'DOCX',
-    exportPdf: 'PDF',
-    exportJson: 'JSON',
-    chatTitle: 'संवादी सहायक',
-    chatSubtitle: 'चैट करें, बोलें या दस्तावेज़ अपलोड करें।',
-    uploadZone: 'वर्ड, पीडीएफ या पीपीटी अपलोड करें',
-    typePlaceholder: 'एक संदेश लिखें...',
-    btnSend: '➤',
-    tabPreview: 'लाइव प्रीव्यू',
-    tabEdit: 'समीक्षा और संपादन',
-    btnAutoSuggest: '✨ टेम्पलेट का सुझाव दें',
-    noTemplate: 'कोई टेम्पलेट चयनित नहीं है',
-    noTemplateDesc: 'अपनी प्रोफ़ाइल बनाने के लिए चैट शुरू करें।',
-    formTitle: 'सत्यापित और संपादित करें',
-    formDesc: 'कैनोनिकल मॉडल को मैन्युअल रूप से संशोधित करें।',
-    lblFullName: 'पूरा नाम',
-    lblEmail: 'ईमेल',
-    lblPhone: 'फ़ोन',
-    lblSummary: 'पेशेवर सारांश',
-    lblExp: 'अनुभव',
-    lblEdu: 'शिक्षा',
-    lblSkills: 'कौशल',
-    btnAddRole: '+ भूमिका जोड़ें',
-    btnAddEdu: '+ शिक्षा जोड़ें',
-    phTitle: 'पद का नाम',
-    phCompany: 'कंपनी',
-    phDates: 'तिथियां',
-    phDesc: 'विवरण',
-    phDegree: 'डिग्री',
-    phInst: 'संस्थान',
-    phSkills: 'JS, SQL...'
-  },
-  'Chinese': {
-    title: 'AI 简历生成器',
-    exportDocx: 'DOCX',
-    exportPdf: 'PDF',
-    exportJson: 'JSON',
-    chatTitle: '会话助手',
-    chatSubtitle: '聊天、语音或上传文档来构建简历。',
-    uploadZone: '上传 Word, PDF 或 PPT',
-    typePlaceholder: '输入信息...',
-    btnSend: '➤',
-    tabPreview: '实时预览',
-    tabEdit: '人工校对与编辑',
-    btnAutoSuggest: '✨ 智能推荐模板',
-    noTemplate: '未选择模板',
-    noTemplateDesc: '开始聊天或上传文档来生成简历。',
-    formTitle: '验证和编辑规范模型',
-    formDesc: '在这里手动修改模型。',
-    lblFullName: '姓名',
-    lblEmail: '邮箱',
-    lblPhone: '电话',
-    lblSummary: '个人简介',
-    lblExp: '工作经验',
-    lblEdu: '教育背景',
-    lblSkills: '技能 (逗号分隔)',
-    btnAddRole: '+ 添加职位',
-    btnAddEdu: '+ 添加教育背景',
-    phTitle: '职位名称',
-    phCompany: '公司',
-    phDates: '时间',
-    phDesc: '描述',
-    phDegree: '学位',
-    phInst: '机构',
-    phSkills: 'JS, SQL, React...'
+    phSkills: 'JS, SQL...',
+    btnEnhance: '✨ Mejorar con IA'
   }
 };
 
@@ -225,9 +92,12 @@ const UI_TRANSLATIONS: any = {
 export class AppComponent implements OnInit, AfterViewChecked {
   @ViewChild('chatScroll') private chatScrollContainer!: ElementRef;
   @ViewChild('fileInput') private fileInput!: ElementRef;
+  @ViewChild('logoInput') private logoInput!: ElementRef;
 
   // View state
   activeTab: 'preview' | 'edit' = 'preview';
+  theme: 'dark' | 'light' = 'light';
+  isDragging: boolean = false;
 
   // Chat State
   messages: ChatMessage[] = [];
@@ -246,22 +116,23 @@ export class AppComponent implements OnInit, AfterViewChecked {
     experience: [], education: [], skills: []
   };
 
-  // Templates & Suggestions
+  // Templates
   templates: any[] = [];
   selectedTemplate: any = null;
-  companyLogoUrl: string = 'https://ui-avatars.com/api/?name=Company+Logo&background=0D8ABC&color=fff&size=128';
+  companyLogoUrl: string = 'https://ui-avatars.com/api/?name=Company+Logo&background=0D8ABC&color=fff&size=200';
   
   // Settings & i18n
   language: string = 'English';
   languages = ['English', 'Spanish', 'French', 'German', 'Hindi', 'Chinese'];
-  t: any = UI_TRANSLATIONS['English']; // active translation dict
+  t: any = UI_TRANSLATIONS['English'];
   
   backendUrl = 'http://localhost:8000/api';
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.addMessage('assistant', 'Welcome! I am your AI CV Builder. You can chat with me, talk to me via voice, or upload an existing resume (Word, PDF, PPT) to extract data. I will map it to our schema. How can I assist you today?');
+    this.setTheme(this.theme);
+    this.addMessage('assistant', 'Welcome! I am your AI CV Builder. You can chat with me, talk to me via voice, or drop an existing resume here. How can I assist you today?');
     this.fetchTemplates();
     this.initNativeSpeechRecognition();
   }
@@ -270,6 +141,26 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.scrollToBottom();
   }
 
+  // --- Theme Toggle ---
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    this.setTheme(this.theme);
+  }
+
+  setTheme(t: 'dark'|'light') {
+    document.documentElement.setAttribute('data-theme', t);
+  }
+
+  // --- Keyboard & Mic Interruptions ---
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (this.isRecording) {
+      if (['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) return;
+      this.stopRecordingAndSubmit();
+    }
+  }
+
+  // --- Language ---
   onLanguageChange() {
     this.t = UI_TRANSLATIONS[this.language] || UI_TRANSLATIONS['English'];
     this.addMessage('system', `[System: Language changed to ${this.language}]`);
@@ -285,6 +176,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.messages.push({ role, content });
   }
 
+  // --- Chat ---
   async sendMessage() {
     if (!this.userInput.trim()) return;
     
@@ -330,7 +222,30 @@ export class AppComponent implements OnInit, AfterViewChecked {
       }
     });
   }
+  
+  // --- AI Auto-Completion Enhance ---
+  enhanceExperience(exp: any) {
+    if (!exp.description || !exp.description.trim()) return;
+    exp._isEnhancing = true; // Set loading state for UI
+    
+    const payload = {
+      text: exp.description,
+      context: exp.title || '',
+      language: this.language
+    };
+    
+    this.http.post<any>(`${this.backendUrl}/enhance`, payload).subscribe({
+      next: (res) => {
+        exp.description = res.enhanced;
+        exp._isEnhancing = false;
+      },
+      error: () => {
+        exp._isEnhancing = false;
+      }
+    });
+  }
 
+  // --- Documents & Logo Uploads ---
   triggerFileInput() {
     this.fileInput.nativeElement.click();
   }
@@ -342,12 +257,35 @@ export class AppComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  // Drag and Drop Events
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    const file = event.dataTransfer?.files[0];
+    if (file) {
+      this.uploadDocument(file);
+    }
+  }
+
   uploadDocument(file: File) {
     const formData = new FormData();
     formData.append('file', file);
     
     this.isLoading = true;
-    this.addMessage('system', `Analysing ${file.name} to map to our schema...`);
+    this.addMessage('system', `Analysing ${file.name}...`);
     
     this.http.post<any>(`${this.backendUrl}/upload`, formData).subscribe({
       next: (res) => {
@@ -356,50 +294,75 @@ export class AppComponent implements OnInit, AfterViewChecked {
           if (typeof this.cvData.skills === 'string') {
             this.cvData.skills = this.cvData.skills.split(',').map((s: string) => s.trim());
           }
-          this.addMessage('assistant', 'Document processed and mapped! The data is populated. Feel free to use the Edit tab to make adjustments.');
+          this.addMessage('assistant', 'Document mapped successfully!');
           if (!this.selectedTemplate) this.suggestTemplate();
         } else {
-          this.addMessage('assistant', 'Text was captured but schema extraction was imperfect.');
+          this.addMessage('assistant', 'Captured text, but schema extraction failed.');
         }
         this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
-        this.addMessage('system', 'Failed to parse the document.');
         this.isLoading = false;
       }
     });
   }
 
+  triggerLogoUpload() {
+    this.logoInput.nativeElement.click();
+  }
+
+  onLogoSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.companyLogoUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // --- Voice / Speech Recognition ---
   initNativeSpeechRecognition() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       this.nativeSpeechRecognition = new SpeechRecognition();
       this.nativeSpeechRecognition.continuous = false;
-      this.nativeSpeechRecognition.interimResults = false;
+      this.nativeSpeechRecognition.interimResults = true; // Enables live partial transcription!
       
       this.nativeSpeechRecognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        this.userInput = transcript;
-        this.toggleRecording(); 
-        this.sendMessage(); 
+        let interimTranscript = '';
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        // Push intermediate or final text to the input field dynamically
+        this.userInput = finalTranscript || interimTranscript;
+
+        if (finalTranscript) {
+          this.isRecording = false; 
+          this.sendMessage(); // auto submit
+        }
       };
       this.nativeSpeechRecognition.onerror = (event: any) => {
-        console.error('Speech recognition error', event.error);
         this.isRecording = false;
       };
+      this.nativeSpeechRecognition.onend = () => {
+        this.isRecording = false;
+      }
     }
   }
 
   async toggleRecording() {
     if (this.isRecording) {
-      this.isRecording = false;
-      if (this.nativeSpeechRecognition) {
-        this.nativeSpeechRecognition.stop();
-      } else if (this.mediaRecorder) {
-        this.mediaRecorder.stop();
-      }
+      this.stopRecordingAndSubmit();
     } else {
+      this.userInput = ''; // clear input before taking voice 
       this.isRecording = true;
       if (this.nativeSpeechRecognition) {
         this.nativeSpeechRecognition.lang = this.getLanguageCode(this.language);
@@ -407,6 +370,15 @@ export class AppComponent implements OnInit, AfterViewChecked {
       } else {
         this.startMediaRecorderFallback();
       }
+    }
+  }
+
+  stopRecordingAndSubmit() {
+    this.isRecording = false;
+    if (this.nativeSpeechRecognition) {
+      this.nativeSpeechRecognition.stop(); 
+    } else if (this.mediaRecorder) {
+      this.mediaRecorder.stop();
     }
   }
 
@@ -436,11 +408,11 @@ export class AppComponent implements OnInit, AfterViewChecked {
       };
       this.mediaRecorder.start();
     } catch (err) {
-      console.error('Mic access denied', err);
       this.isRecording = false;
     }
   }
 
+  // --- Various actions ---
   fetchTemplates() {
     this.http.get<any>(`${this.backendUrl}/templates`).subscribe(res => {
       this.templates = res.templates || [];
@@ -471,10 +443,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
   }
 
   exportDocx() {
-    if (!this.selectedTemplate) {
-      alert("Please select a template first!");
-      return;
-    }
+    if (!this.selectedTemplate) return;
     const payload = { cv_data: this.cvData, format: 'docx' };
     this.http.post(`${this.backendUrl}/generate`, payload, { responseType: 'blob' }).subscribe(blob => {
       const url = window.URL.createObjectURL(blob);
@@ -491,7 +460,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.cvData, null, 2));
     const a = document.createElement('a');
     a.href = dataStr;
-    a.download = "cv_canonical_schema.json";
+    a.download = "cv.json";
     document.body.appendChild(a);
     a.click();
     a.remove();

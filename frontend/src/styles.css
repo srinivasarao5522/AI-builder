@@ -1,20 +1,25 @@
-/* Global Styles for an Elegant Light Theme Aesthetic */
+/* Global Styles for Elegant Glassmorphism Themes */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --accent-primary: #0f172a;
-  --accent-secondary: #3b82f6;
+  /* DARK GLASS THEME (DEFAULT) */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #8b5cf6;
   --accent-gradient: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 15px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 40px rgba(0,0,0,0.08);
-  
-  --border-color: #e2e8f0;
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-input-bg: rgba(255, 255, 255, 0.05);
+
+  --message-user-bg: var(--accent-gradient);
+  --message-user-color: white;
+  --message-bot-bg: var(--bg-secondary);
+  --message-bot-color: var(--text-primary);
   
   --success: #10b981;
   --danger: #ef4444;
@@ -22,6 +27,32 @@
   
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
+  
+  --bg-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+              radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+}
+
+[data-theme="light"] {
+  /* LIGHT GLASS THEME */
+  --bg-primary: #f1f5f9;
+  --bg-secondary: rgba(255, 255, 255, 0.85);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-primary: #2563eb;
+  --accent-secondary: #6366f1;
+  
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --glass-input-bg: rgba(255, 255, 255, 0.9);
+
+  --message-user-bg: var(--accent-gradient);
+  --message-user-color: white;
+  --message-bot-bg: #e2e8f0;
+  --message-bot-color: #0f172a;
+  
+  --bg-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 30%),
+              radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08), transparent 30%);
 }
 
 * {
@@ -33,12 +64,12 @@
 body {
   font-family: var(--font-body);
   background-color: var(--bg-primary);
-  /* A very soft radial glow for texture */
-  background-image: radial-gradient(circle at top left, #ebf4ff, transparent 40%);
+  background-image: var(--bg-image);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -53,19 +84,22 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(148, 163, 184, 0.4);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(148, 163, 184, 0.8);
 }
 
-/* Base Light UI Panel utility */
+/* Base Glassmorphism utility */
 .soft-panel {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.4s ease;
 }
 
 .btn {
@@ -75,7 +109,7 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -83,23 +117,24 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background: var(--accent-primary);
+  background: var(--accent-gradient);
   color: white;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
 
 .btn-primary:hover {
-  background: #1e293b;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .btn-secondary {
-  background: #f1f5f9;
+  background: var(--glass-input-bg);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--glass-border);
 }
 
 .btn-secondary:hover {
-  background: #e2e8f0;
+  background: rgba(148, 163, 184, 0.1);
 }
 
 .btn:disabled {
