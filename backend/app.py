@@ -264,68 +264,87 @@ async def generate_cv(req: dict):
                 elif "base64," in logo_data:
                     img_bytes = base64.b64decode(logo_data.split(",")[1])
                     img_stream = io.BytesIO(img_bytes)
-                
-                if img_stream:
-                    if align_center:
-                        logo_p = doc.add_paragraph()
-                        logo_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                        logo_r = logo_p.add_run()
-                        logo_r.add_picture(img_stream, width=Inches(1.0))
-                    else:
-                        doc.add_picture(img_stream, width=Inches(1.0))
             except Exception as e:
-                print(f"Failed to add logo: {e}")
+                print(f"Failed to load logo: {e}")
 
-        name_heading = doc.add_heading(cv_data.get("name", "Generated CV"), 0)
-        name_heading.style.font.color.rgb = main_color
-        if align_center:
-            name_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
-        contact_info = []
-        if cv_data.get("email"): contact_info.append(cv_data.get("email"))
-        if cv_data.get("phone"): contact_info.append(cv_data.get("phone"))
-        
-        contact_p = doc.add_paragraph(" | ".join(contact_info))
-        if align_center:
-            contact_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
-        if cv_data.get("summary"):
-            h1 = doc.add_heading("Summary", level=1)
-            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            doc.add_paragraph(cv_data.get("summary", ""))
-        
-        if cv_data.get("experience"):
-            h1 = doc.add_heading("Experience", level=1)
-            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            for exp in cv_data.get("experience", []):
-                h2 = doc.add_heading(exp.get("title", "Role"), level=2)
+        # Document Generator helper
+        def add_summary(container):
+            if cv_data.get("summary"):
+                h = container.add_paragraph("Summary", style='Heading 1')
+                if align_center: h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                container.add_paragraph(cv_data.get("summary", ""))
+
+        def add_exp(container):
+            if cv_data.get("experience"):
+                h = container.add_paragraph("Experience", style='Heading 1')
+                if align_center: h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                for exp in cv_data.get("experience", []):
+                    h2 = container.add_paragraph(exp.get("title", "Role"), style='Heading 2')
+                    p = container.add_paragraph()
+                    run = p.add_run(exp.get("company", "Company"))
+                    run.bold = True
+                    run.font.color.rgb = accent_color
+                    if exp.get("dates"): p.add_run(f" | {exp.get('dates')}")
+                    if exp.get("description"): container.add_paragraph(exp.get("description", ""))
+
+        def add_edu(container):
+            if cv_data.get("education"):
+                h = container.add_paragraph("Education", style='Heading 1')
+                if align_center: h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                for edu in cv_data.get("education", []):
+                    container.add_paragraph(edu.get("degree", "Degree"), style='Heading 2')
+                    container.add_paragraph(edu.get("institution", "Institution"))
+
+        def add_skills(container):
+            if cv_data.get("skills"):
+                h = container.add_paragraph("Skills", style='Heading 1')
+                if align_center: h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                skills = cv_data.get("skills", [])
+                p = container.add_paragraph(", ".join(skills) if isinstance(skills, list) else str(skills))
+                if align_center: p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Layout logic
+        if template_id in ['t2', 't3']: # Side by side 2 column layouts
+            table = doc.add_table(rows=1, cols=2)
+            table.autofit = True
+            left_cell = table.cell(0, 0)
+            right_cell = table.cell(0, 1)
+
+            if img_stream:
+                p = left_cell.paragraphs[0] if template_id == 't2' else doc.add_paragraph()
+                r = p.add_run() if template_id == 't2' else doc.paragraphs[0].add_run()
+                r.add_picture(img_stream, width=Inches(1.0))
+            
+            # Left pane: Contact, Skills, Education
+            left_cell.add_paragraph(cv_data.get("name", "Generated CV"), style="Title")
+            if cv_data.get("email"): left_cell.add_paragraph(cv_data.get("email"))
+            if cv_data.get("phone"): left_cell.add_paragraph(cv_data.get("phone"))
+            add_skills(left_cell)
+            add_edu(left_cell)
+
+            # Right pane: Summary, Experience
+            add_summary(right_cell)
+            add_exp(right_cell)
+
+        else: # Classic Top-down flow
+            if img_stream:
                 p = doc.add_paragraph()
-                run = p.add_run(exp.get("company", "Company"))
-                run.bold = True
-                run.font.color.rgb = accent_color
-                
-                if exp.get("dates"):
-                    p.add_run(f" | {exp.get('dates')}")
-                if exp.get("description"):
-                    doc.add_paragraph(exp.get("description", ""))
-        
-        if cv_data.get("education"):
-            h1 = doc.add_heading("Education", level=1)
-            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            for edu in cv_data.get("education", []):
-                doc.add_heading(edu.get("degree", "Degree"), level=2)
-                doc.add_paragraph(edu.get("institution", "Institution"))
-                
-        if cv_data.get("skills"):
-            h1 = doc.add_heading("Skills", level=1)
-            if align_center: h1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            skills = cv_data.get("skills", [])
-            if isinstance(skills, list):
-                p = doc.add_paragraph(", ".join(skills))
                 if align_center: p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            else:
-                p = doc.add_paragraph(str(skills))
+                p.add_run().add_picture(img_stream, width=Inches(1.0))
+            
+            h = doc.add_heading(cv_data.get("name", "Generated CV"), 0)
+            h.style.font.color.rgb = main_color
+            if align_center: h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            contact_info = [c for c in [cv_data.get("email"), cv_data.get("phone")] if c]
+            if contact_info:
+                p = doc.add_paragraph(" | ".join(contact_info))
                 if align_center: p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            add_summary(doc)
+            add_exp(doc)
+            add_edu(doc)
+            add_skills(doc)
         
         file_stream = io.BytesIO()
         doc.save(file_stream)

@@ -131,7 +131,7 @@
             <div class="form-group">
               <label>{{t.lblEmail || 'Email'}}</label>
               <!-- EMail validation attached right here natively -->
-              <input type="email" name="email" [(ngModel)]="cvData.email" #emailInput="ngModel" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$" class="soft-input full-width" autocomplete="email" spellcheck="false" [class.input-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+              <input type="email" name="email" [ngModel]="uiEmail" (ngModelChange)="onEmailChange($event)" #emailInput="ngModel" pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,4}$" class="soft-input full-width" autocomplete="email" spellcheck="false" [class.input-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
               <small class="error-text" *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
                 Valid email is required.
               </small>
@@ -141,10 +141,15 @@
               <input type="tel" name="phone" [(ngModel)]="cvData.phone" class="soft-input full-width" autocomplete="tel" spellcheck="false">
             </div>
           </div>
-          <div class="form-group">
-            <label>{{t.lblSummary || 'Summary'}}</label>
-            <textarea name="summary" [(ngModel)]="cvData.summary" class="soft-input full-width" rows="4" spellcheck="true"></textarea>
-          </div>
+            <div class="form-group relative align-content">
+              <label>{{t.lblSummary || 'Summary'}}</label>
+              <textarea name="summary" [(ngModel)]="cvData.summary" class="soft-input full-width desc-box" rows="4" spellcheck="true" [disabled]="cvData._isEnhancingSummary"></textarea>
+              <!-- AI Enhance Auto-Complete Button -->
+              <button type="button" class="btn-enhance action-btn-sm" (click)="enhanceSummary()" [disabled]="cvData._isEnhancingSummary || !cvData.summary">
+                 <span *ngIf="!cvData._isEnhancingSummary">{{t.btnEnhance || '✨ AI Enhance'}}</span>
+                 <span *ngIf="cvData._isEnhancingSummary">Generating...</span>
+              </button>
+            </div>
 
           <div class="section-edit">
             <div class="section-title-bar">

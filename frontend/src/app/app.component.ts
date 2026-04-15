@@ -135,6 +135,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.addMessage('assistant', 'Welcome! I am your AI CV Builder. You can chat with me, talk to me via voice, or drop an existing resume here. How can I assist you today?');
     this.fetchTemplates();
     this.initNativeSpeechRecognition();
+    this.uiEmail = this.cvData.email;
   }
 
   ngAfterViewChecked() {
@@ -156,9 +157,10 @@ export class AppComponent implements OnInit, AfterViewChecked {
   handleKeyboardEvent(event: KeyboardEvent) {
     if (this.isRecording) {
       if (['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) return;
-      event.preventDefault();
-      // Any generic typing key stops the mic and instantly submits the buffered text!
-      this.stopRecordingAndSubmit();
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        this.stopRecordingAndSubmit();
+      }
     }
   }
 
@@ -225,6 +227,27 @@ export class AppComponent implements OnInit, AfterViewChecked {
     });
   }
   
+  enhanceSummary() {
+    if (!this.cvData.summary || !this.cvData.summary.trim()) return;
+    this.cvData._isEnhancingSummary = true;
+    
+    const payload = {
+      text: this.cvData.summary,
+      context: 'Professional Profile Summary',
+      language: this.language
+    };
+    
+    this.http.post<any>(`${this.backendUrl}/enhance`, payload).subscribe({
+      next: (res) => {
+        this.cvData.summary = res.enhanced;
+        this.cvData._isEnhancingSummary = false;
+      },
+      error: () => {
+        this.cvData._isEnhancingSummary = false;
+      }
+    });
+  }
+
   // --- AI Auto-Completion Enhance ---
   enhanceExperience(exp: any) {
     if (!exp.description || !exp.description.trim()) return;
@@ -425,6 +448,16 @@ export class AppComponent implements OnInit, AfterViewChecked {
   }
 
   // --- Various actions ---
+  uiEmail: string = '';
+  
+  onEmailChange(newVal: string) {
+    this.uiEmail = newVal;
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,4}$/;
+    if (emailRegex.test(newVal) || newVal === '') {
+       this.cvData.email = newVal; // Sync canonical email only if valid or empty
+    }
+  }
+
   fetchTemplates() {
     this.http.get<any>(`${this.backendUrl}/templates`).subscribe(res => {
       this.templates = res.templates || [];
