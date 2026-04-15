@@ -93,8 +93,8 @@
       
       <div class="preview-toolbar">
         <div class="tabs">
-          <button class="tab-btn" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">{{t.tabPreview || 'Preview'}}</button>
-          <button class="tab-btn" [class.active]="activeTab === 'edit'" (click)="activeTab = 'edit'">{{t.tabEdit || 'Edit'}}</button>
+          <button class="tab-btn" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">{{t.tabPreview || 'Live Preview'}}</button>
+          <button class="tab-btn" [class.active]="activeTab === 'edit'" (click)="activeTab = 'edit'">{{t.tabEdit || 'Human Editor'}}</button>
         </div>
 
         <div class="templates-scroll">
@@ -104,7 +104,7 @@
             🖼️ {{t.btnUploadLogo || 'Upload Logo'}}
           </button>
           
-          <button class="action-btn-sm" (click)="suggestTemplate()">
+          <button class="action-btn-sm primary-glow" (click)="suggestTemplate()">
              {{t.btnAutoSuggest || '✨ Suggest Template'}}
           </button>
           
@@ -119,8 +119,10 @@
       <!-- EDIT MODE -->
       <div class="edit-area" *ngIf="activeTab === 'edit'">
         <form class="edit-form" #cvForm="ngForm">
-          <h3 class="form-title">{{t.formTitle || 'Edit Schema'}}</h3>
-          <p class="form-desc">{{t.formDesc || 'Modify elements.'}}</p>
+          <div class="form-header">
+            <h3 class="form-title">{{t.formTitle || 'Edit Schema'}}</h3>
+            <p class="form-desc">{{t.formDesc || 'Modify canonical elements. Direct sync onto rendering layer.'}}</p>
+          </div>
           
           <div class="form-group">
             <label>{{t.lblFullName || 'Full Name'}}</label>
@@ -129,11 +131,8 @@
           <div class="form-group-row">
             <div class="form-group">
               <label>{{t.lblEmail || 'Email'}}</label>
-              <!-- EMail validation attached right here natively -->
               <input type="email" name="email" [(ngModel)]="cvData.email" #emailInput="ngModel" pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,4}$" class="soft-input full-width" autocomplete="email" spellcheck="false" [class.input-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
-              <small class="error-text" *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
-                Valid email is required.
-              </small>
+              <small class="error-text" *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">Valid email required.</small>
             </div>
             <div class="form-group">
               <label>{{t.lblPhone || 'Phone'}}</label>
@@ -143,7 +142,6 @@
             <div class="form-group relative align-content">
               <label>{{t.lblSummary || 'Summary'}}</label>
               <textarea name="summary" [(ngModel)]="cvData.summary" class="soft-input full-width desc-box" rows="4" spellcheck="true" [disabled]="cvData._isEnhancingSummary"></textarea>
-              <!-- AI Enhance Auto-Complete Button -->
               <button type="button" class="btn-enhance action-btn-sm" (click)="enhanceSummary()" [disabled]="cvData._isEnhancingSummary || !cvData.summary">
                  <span *ngIf="!cvData._isEnhancingSummary">{{t.btnEnhance || '✨ AI Enhance'}}</span>
                  <span *ngIf="cvData._isEnhancingSummary">Generating...</span>
@@ -153,7 +151,7 @@
           <div class="section-edit">
             <div class="section-title-bar">
               <h4>{{t.lblExp || 'Experience'}}</h4>
-              <button type="button" class="add-btn" (click)="addExperience()">{{t.btnAddRole || 'Add'}}</button>
+              <button type="button" class="add-btn" (click)="addExperience()">{{t.btnAddRole || 'Add Role'}}</button>
             </div>
             <div class="item-edit-card" *ngFor="let exp of cvData.experience; let i = index">
               <input type="text" [name]="'expTitle'+i" [(ngModel)]="exp.title" [placeholder]="t.phTitle || 'Title'" class="soft-input half-width" spellcheck="true">
@@ -162,8 +160,6 @@
               
               <div class="relative align-content">
                  <textarea [name]="'expDesc'+i" [(ngModel)]="exp.description" [placeholder]="t.phDesc || 'Description'" class="soft-input full-width mt-2 desc-box" rows="4" [disabled]="exp._isEnhancing" spellcheck="true"></textarea>
-                 
-                 <!-- AI Enhance Auto-Complete Button -->
                  <button type="button" class="btn-enhance action-btn-sm" (click)="enhanceExperience(exp)" [disabled]="exp._isEnhancing || !exp.description">
                    <span *ngIf="!exp._isEnhancing">{{t.btnEnhance || '✨ AI Enhance'}}</span>
                    <span *ngIf="exp._isEnhancing">Generating...</span>
@@ -175,7 +171,7 @@
           <div class="section-edit">
             <div class="section-title-bar">
               <h4>{{t.lblEdu || 'Education'}}</h4>
-              <button type="button" class="add-btn" (click)="addEducation()">{{t.btnAddEdu || 'Add'}}</button>
+              <button type="button" class="add-btn" (click)="addEducation()">{{t.btnAddEdu || 'Add Ed'}}</button>
             </div>
              <div class="item-edit-card" *ngFor="let edu of cvData.education; let i = index">
               <input type="text" [name]="'eduDegree'+i" [(ngModel)]="edu.degree" [placeholder]="t.phDegree || 'Degree'" class="soft-input half-width" spellcheck="true">
