@@ -226,35 +226,53 @@ async def generate_cv(req: dict):
         if template_id == 't1': # Classic
             main_color = RGBColor(17, 17, 17) # Dark Gray
             heading1.font.name = 'Times New Roman'
+            heading2.font.name = 'Times New Roman'
+            normal.font.name = 'Times New Roman'
         elif template_id == 't2': # Modern
             main_color = RGBColor(15, 23, 42)
             accent_color = RGBColor(71, 85, 105)
             heading1.font.name = 'Arial'
+            heading2.font.name = 'Arial'
+            normal.font.name = 'Arial'
         elif template_id == 't3': # Creative
             main_color = RGBColor(15, 23, 42)
             accent_color = RGBColor(59, 130, 246) # Blue
             heading1.font.name = 'Calibri'
+            heading2.font.name = 'Calibri'
+            normal.font.name = 'Calibri'
         elif template_id == 't4': # Exec
             main_color = RGBColor(17, 17, 17)
             align_center = True
             heading1.font.name = 'Georgia'
+            heading2.font.name = 'Georgia'
+            normal.font.name = 'Georgia'
         
         heading1.font.color.rgb = main_color
         heading2.font.color.rgb = main_color
 
         # Inject Logo if present
+        import urllib.request
         logo_data = req.get("logo_data", "")
-        if logo_data and "base64," in logo_data:
+        img_stream = None
+        if logo_data:
             try:
-                img_bytes = base64.b64decode(logo_data.split(",")[1])
-                img_stream = io.BytesIO(img_bytes)
-                if align_center:
-                    logo_p = doc.add_paragraph()
-                    logo_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    logo_r = logo_p.add_run()
-                    logo_r.add_picture(img_stream, width=Inches(1.0))
-                else:
-                    doc.add_picture(img_stream, width=Inches(1.0))
+                if logo_data.startswith("http"):
+                    req_obj = urllib.request.Request(logo_data, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req_obj) as response:
+                        img_bytes = response.read()
+                        img_stream = io.BytesIO(img_bytes)
+                elif "base64," in logo_data:
+                    img_bytes = base64.b64decode(logo_data.split(",")[1])
+                    img_stream = io.BytesIO(img_bytes)
+                
+                if img_stream:
+                    if align_center:
+                        logo_p = doc.add_paragraph()
+                        logo_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        logo_r = logo_p.add_run()
+                        logo_r.add_picture(img_stream, width=Inches(1.0))
+                    else:
+                        doc.add_picture(img_stream, width=Inches(1.0))
             except Exception as e:
                 print(f"Failed to add logo: {e}")
 

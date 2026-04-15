@@ -156,6 +156,8 @@ export class AppComponent implements OnInit, AfterViewChecked {
   handleKeyboardEvent(event: KeyboardEvent) {
     if (this.isRecording) {
       if (['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) return;
+      event.preventDefault();
+      // Any generic typing key stops the mic and instantly submits the buffered text!
       this.stopRecordingAndSubmit();
     }
   }
@@ -354,11 +356,9 @@ export class AppComponent implements OnInit, AfterViewChecked {
       };
 
       this.nativeSpeechRecognition.onend = () => {
+        // Only run resets. Message sending is handled proactively in stopRecordingAndSubmit!
         this.isRecording = false;
         if (this.silenceTimer) clearTimeout(this.silenceTimer);
-        if (this.userInput && this.userInput.trim()) {
-          this.sendMessage(); // auto submit
-        }
       }
     }
   }
@@ -380,10 +380,17 @@ export class AppComponent implements OnInit, AfterViewChecked {
 
   stopRecordingAndSubmit() {
     this.isRecording = false;
+    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    
     if (this.nativeSpeechRecognition) {
       this.nativeSpeechRecognition.stop(); 
     } else if (this.mediaRecorder) {
       this.mediaRecorder.stop();
+    }
+
+    // Force submit here
+    if (this.userInput && this.userInput.trim()) {
+      this.sendMessage();
     }
   }
 
